@@ -1,0 +1,185 @@
+<!-- index.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Add smooth scrolling to html -->
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
+
+<!-- Enhanced Hero Section -->
+<section class="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-20 md:py-32 relative overflow-hidden">
+    <!-- Decorative Elements -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 translate-y-1/2"></div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in">
+            Your Trusted Home Service Solution
+        </h1>
+        <p class="text-xl md:text-2xl mb-12 text-blue-100 max-w-3xl mx-auto">
+            Connect with skilled professionals for all your home repair and maintenance needs
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-2xl mx-auto">
+            <button class="transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl">
+            Find a Service
+            </button>
+            <button class="transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl">
+            Become a Provider
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Popular Services -->
+<section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-3xl font-bold mb-12 text-center">Popular Services</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <!-- Enhanced Service Cards -->
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group cursor-pointer">
+            <div class="text-blue-500 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">💧</div>
+            <div class="font-semibold group-hover:text-blue-600 transition-colors duration-300">Plumbing</div>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group cursor-pointer">
+            <div class="text-yellow-500 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">⚡</div>
+            <div class="font-semibold group-hover:text-yellow-600 transition-colors duration-300">Electrical</div>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group cursor-pointer">
+            <div class="text-gray-500 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🔧</div>
+            <div class="font-semibold group-hover:text-gray-600 transition-colors duration-300">Handyman</div>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group cursor-pointer">
+            <div class="text-purple-500 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🎨</div>
+            <div class="font-semibold group-hover:text-purple-600 transition-colors duration-300">Painting</div>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group cursor-pointer">
+            <div class="text-orange-500 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🔨</div>
+            <div class="font-semibold group-hover:text-orange-600 transition-colors duration-300">Carpentry</div>
+        </div>
+        <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group cursor-pointer">
+            <div class="text-red-500 text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🌡️</div>
+            <div class="font-semibold group-hover:text-red-600 transition-colors duration-300">HVAC</div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Featured Services -->
+<section class="py-16 bg-gradient-to-b from-gray-50 to-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold mb-12">Featured Services</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Enhanced Service Cards -->
+            <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Expert Plumbing Services</h3>
+                        <p class="text-gray-600">John's Plumbing</p>
+                    </div>
+                    <span class="bg-blue-100 text-blue-600 px-4 py-1 rounded-full text-sm font-medium">Plumbing</span>
+                </div>
+                <p class="text-gray-600 mb-6 leading-relaxed">Professional plumbing services including repairs, installations, and maintenance.</p>
+                <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <div class="flex items-center">
+                        <span class="text-yellow-400 text-xl">⭐</span>
+                        <span class="ml-2 font-medium">4.8</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl font-bold text-gray-900">$75/hr</span>
+                        <button class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copy similar enhancements for Electrical and Painting cards -->
+            <!-- Electrical Card -->
+            <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+                <!-- Similar enhanced structure as plumbing card -->
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Electrical Repairs & Installation</h3>
+                        <p class="text-gray-600">PowerPro Electric</p>
+                    </div>
+                    <span class="bg-blue-100 text-blue-600 px-4 py-1 rounded-full text-sm font-medium">Electrical</span>
+                </div>
+                <p class="text-gray-600 mb-6 leading-relaxed">Licensed electrician for all your electrical needs. Available 24/7 for emergencies.</p>
+                <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <div class="flex items-center">
+                        <span class="text-yellow-400 text-xl">⭐</span>
+                        <span class="ml-2 font-medium">4.9</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl font-bold text-gray-900">$85/hr</span>
+                        <button class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painting Card -->
+            <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Home Painting Services</h3>
+                        <p class="text-gray-600">Perfect Paint Co.</p>
+                    </div>
+                    <span class="bg-blue-100 text-blue-600 px-4 py-1 rounded-full text-sm font-medium">Painting</span>
+                </div>
+                <p class="text-gray-600 mb-6 leading-relaxed">Interior and exterior painting services with premium quality materials.</p>
+                <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <div class="flex items-center">
+                        <span class="text-yellow-400 text-xl">⭐</span>
+                        <span class="ml-2 font-medium">4.7</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-2xl font-bold text-gray-900">$45/hr</span>
+                        <button class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Why Choose Us -->
+<section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-3xl font-bold mb-12 text-center">Why Choose FixItNow?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+        <div class="group">
+            <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-100 transition-colors duration-300">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Verified Professionals</h3>
+            <p class="text-gray-600 leading-relaxed">All service providers are thoroughly vetted and verified for your peace of mind</p>
+        </div>
+        <div class="group">
+            <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-100 transition-colors duration-300">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Secure Booking</h3>
+            <p class="text-gray-600 leading-relaxed">Easy and secure online booking and payment system for your convenience</p>
+        </div>
+        <div class="group">
+            <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-100 transition-colors duration-300">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Satisfaction Guaranteed</h3>
+            <p class="text-gray-600 leading-relaxed">100% satisfaction guarantee on all services or your money back</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
