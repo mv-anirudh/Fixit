@@ -25,12 +25,12 @@
             Connect with skilled professionals for all your home repair and maintenance needs
         </p>
         <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-2xl mx-auto">
-            <button class="transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl">
+            <a href="{url 'Services:service_list'}" class="transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl">
             Find a Service
-            </button>
-            <button class="transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl">
+            </a>
+            <a href="{% url 'accounts:service_registration' %}" class="transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl">
             Become a Provider
-            </button>
+            </a>
         </div>
     </div>
 </section>
