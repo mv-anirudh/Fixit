@@ -59,16 +59,31 @@ class BookingForm(forms.ModelForm):
 
         return cleaned_data
 
+# forms.py
+
+
 class ServiceSearchForm(forms.Form):
+    q = forms.CharField(required=False, widget=forms.TextInput(
+        attrs={'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+               'placeholder': 'What service do you need?'}
+    ))
+    location = forms.CharField(required=False, widget=forms.TextInput(
+        attrs={'class': 'w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+               'placeholder': 'Location'}
+    ))
     category = forms.ModelChoiceField(
         queryset=ServiceCategory.objects.all(),
         required=False,
-        empty_label="All Categories"
+        empty_label="All Categories",
+        widget=forms.Select(attrs={'class': 'px-4 py-2 rounded-lg border border-gray-300'})
     )
-    location = forms.CharField(required=False)
-    min_price = forms.DecimalField(required=False, min_value=0)
-    max_price = forms.DecimalField(required=False, min_value=0)
-    availability_date = forms.DateField(
+    price = forms.ChoiceField(
+        choices=[
+            ('', 'Price Range'),
+            ('0-50', '$0 - $50'),
+            ('51-100', '$51 - $100'),
+            ('101+', '$101+')
+        ],
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
+        widget=forms.Select(attrs={'class': 'px-4 py-2 rounded-lg border border-gray-300'})
     )

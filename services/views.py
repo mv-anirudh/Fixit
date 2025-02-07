@@ -7,55 +7,77 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Avg
 from .models import Service, ServiceCategory, Booking
 from .forms import ServiceForm, BookingForm, ServiceSearchForm
 from datetime import datetime
 
 class ServiceListView(ListView):
     model = Service
-    template_name = 'services/service_list.html'
+    template_name = 'service_list.html'
     context_object_name = 'services'
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = Service.objects.filter(is_active=True)
+        queryset = Service.objects.filter(is_active=True).select_related(
+            'provider', 'category'
+        )
+        
         form = ServiceSearchForm(self.request.GET)
         
         if form.is_valid():
-            category = form.cleaned_data.get('category')
-            location = form.cleaned_data.get('location')
-            min_price = form.cleaned_data.get('min_price')
-            max_price = form.cleaned_data.get('max_price')
-            availability_date = form.cleaned_data.get('availability_date')
+            # Text search
+            q = form.cleaned_data.get('q')
+            if q:
+                queryset = queryset.filter(
+                    Q(title__icontains=q) |
+                    Q(description__icontains=q) |
+                    Q(provider__business_name__icontains=q)
+                )
 
-            if category:
-                queryset = queryset.filter(category=category)
+            # Location search
+            location = form.cleaned_data.get('location')
             if location:
                 queryset = queryset.filter(
-                    provider__service_areas__city__icontains=location
-                ).distinct()
-            if min_price is not None:
-                queryset = queryset.filter(base_price__gte=min_price)
-            if max_price is not None:
-                queryset = queryset.filter(base_price__lte=max_price)
-            if availability_date:
-                day_name = availability_date.strftime('%A')
-                queryset = queryset.filter(
-                    provider__availability__day_of_week=day_name,
-                    provider__availability__is_available=True
+                    Q(provider__service_areas__city__icontains=location) |
+                    Q(provider__service_areas__state__icontains=location) |
+                    Q(provider__service_areas__zip_code__icontains=location)
                 ).distinct()
 
-        return queryset
+            # Category filter
+            category = form.cleaned_data.get('category')
+            if category:
+                queryset = queryset.filter(category=category)
+
+            # Price range filter
+            price_range = form.cleaned_data.get('price')
+            if price_range:
+                if price_range == '0-50':
+                    queryset = queryset.filter(base_price__lte=50)
+                elif price_range == '51-100':
+                    queryset = queryset.filter(base_price__gt=50, base_price__lte=100)
+                elif price_range == '101+':
+                    queryset = queryset.filter(base_price__gt=100)
+
+        return queryset.order_by('-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_form'] = ServiceSearchForm(self.request.GET)
+        context['categories'] = ServiceCategory.objects.all()
+        
+        # Preserve search parameters in pagination
+        if self.request.GET:
+            query_params = self.request.GET.copy()
+            if 'page' in query_params:
+                del query_params['page']
+            context['query_params'] = query_params.urlencode()
+        
         return context
 
 class ServiceDetailView(DetailView):
     model = Service
-    template_name = 'services/service_detail.html'
+    template_name = 'service_detail.html'
     context_object_name = 'service'
 
     def get_context_data(self, **kwargs):

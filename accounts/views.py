@@ -4,6 +4,8 @@ from django.views import View
 from django.views.generic import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate,login,logout
+from django.db import transaction
+
 
 from accounts.models import ServiceProvider
 from .forms import CertificationForm, ServiceAreaForm, ServiceProviderForm, UserRegistrationForm,SiginForm
@@ -91,8 +93,11 @@ class ServiceProviderRegistrationView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('index')
 
     def dispatch(self, request, *args, **kwargs):
-        # Redirect to the customer message page if the user is not a service provider
-        if not request.user.is_authenticated or  request.user.user_type != 'service_provider':
+        # Check if user is already registered as service provider
+        if hasattr(request.user, 'serviceprovider'):
+            return render(request, 'already_registered.html')
+            
+        if not request.user.is_authenticated or request.user.user_type != 'service_provider':
             return render(request, 'customer_message.html')
         return super().dispatch(request, *args, **kwargs)
 
@@ -102,8 +107,9 @@ class ServiceProviderRegistrationView(LoginRequiredMixin, CreateView):
             context['service_area_form'] = ServiceAreaForm(self.request.POST)
             context['certification_form'] = CertificationForm(self.request.POST)
         else:
-            context['service_area_form'] = ServiceAreaForm()
-            context['certification_form'] = CertificationForm()
+            # Initialize forms without provider field
+            context['service_area_form'] = ServiceAreaForm(initial={'provider': None})
+            context['certification_form'] = CertificationForm(initial={'provider': None})
         return context
 
     def form_valid(self, form):
@@ -112,19 +118,26 @@ class ServiceProviderRegistrationView(LoginRequiredMixin, CreateView):
         certification_form = context['certification_form']
 
         if service_area_form.is_valid() and certification_form.is_valid():
-            service_provider = form.save(commit=False)
-            service_provider.user = self.request.user
-            service_provider.save()
+            try:
+                with transaction.atomic():
+                    # Save service provider
+                    service_provider = form.save(commit=False)
+                    service_provider.user = self.request.user
+                    service_provider.save()
 
-            service_area = service_area_form.save(commit=False)
-            service_area.provider = service_provider
-            service_area.save()
+                    # Save service area
+                    service_area = service_area_form.save(commit=False)
+                    service_area.provider = service_provider
+                    service_area.save()
 
-            certification = certification_form.save(commit=False)
-            certification.provider = service_provider
-            certification.save()
+                    # Save certification
+                    certification = certification_form.save(commit=False)
+                    certification.provider = service_provider
+                    certification.save()
 
-            return redirect(self.success_url)
+                return super().form_valid(form)
+            except Exception as e:
+                form.add_error(None, f"Registration failed: {str(e)}")
+                return self.form_invalid(form)
         else:
-            # If forms are not valid, re-render the page with errors
-            return self.render_to_response(self.get_context_data(form=form))  
+            return self.form_invalid(form)
