@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 from django.db import models
+from django.forms import ValidationError
 from accounts.models import User, ServiceProvider
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -87,24 +88,6 @@ class Booking(models.Model):
     def __str__(self):
         return f"Booking {self.id} - {self.service.name}"
 
-    class Meta:
-        ordering = ['-booking_date', '-booking_time']
-
-    def clean(self):
-        from django.core.exceptions import ValidationError
-        # Check if service provider is available at the requested time
-        availability = AvailabilitySchedule.objects.filter(
-            provider=self.provider,
-            day_of_week=self.booking_date.strftime('%A'),
-            is_available=True
-        ).first()
-        
-        if not availability:
-            raise ValidationError('Service provider is not available on this day')
-        
-        if (self.booking_time < availability.start_time or 
-            self.booking_time > availability.end_time):
-            raise ValidationError('Service provider is not available at this time')
 
 class ServiceImage(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='images')
@@ -121,3 +104,18 @@ class ServiceImage(models.Model):
             # Set all other images of this service to not primary
             ServiceImage.objects.filter(service=self.service).update(is_primary=False)
         super().save(*args, **kwargs)
+        
+        
+class Review(models.Model):
+    service_provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2,
+        validators=[MinValueValidator(0.00), MaxValueValidator(5.00)]
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.service_provider.business_name}"

@@ -1,7 +1,8 @@
 from django import forms
-from .models import Service, Booking, ServiceCategory
+from .models import AvailabilitySchedule, Service, Booking, ServiceCategory
 from django.core.exceptions import ValidationError
-from datetime import datetime, time
+from datetime import *
+from django.utils import timezone
 
 class ServiceForm(forms.ModelForm):
     class Meta:
@@ -21,11 +22,11 @@ class ServiceForm(forms.ModelForm):
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['booking_date', 'booking_time', 'service_location', 'special_instructions']
+        fields = ['booking_time', 'special_instructions', 'service_location']
         widgets = {
-            'booking_date': forms.DateInput(attrs={'type': 'date'}),
-            'booking_time': forms.TimeInput(attrs={'type': 'time'}),
-            'special_instructions': forms.Textarea(attrs={'rows': 3}),
+            'booking_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'special_instructions': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'service_location': forms.TextInput(attrs={'class': 'form-control'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -34,28 +35,26 @@ class BookingForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        booking_date = cleaned_data.get('booking_date')
-        booking_time = cleaned_data.get('booking_time')
+        
+        # Set booking date to today
+        cleaned_data['booking_date'] = timezone.now().date()
+        
+        # Validate time against provider's availability
+        if self.provider:
+            day_of_week = cleaned_data['booking_date'].strftime('%A')
+            availability = AvailabilitySchedule.objects.filter(
+                provider=self.provider,
+                day_of_week=day_of_week,
+                is_available=True
+            ).first()
 
-        if booking_date and booking_time:
-            # Check if date is not in past
-            if booking_date < datetime.now().date():
-                raise ValidationError('Cannot book service for past dates')
+            if not availability:
+                raise forms.ValidationError('Provider is not available today.')
 
-            # Check provider availability
-            if self.provider:
-                day_name = booking_date.strftime('%A')
-                availability = self.provider.availability.filter(
-                    day_of_week=day_name,
-                    is_available=True
-                ).first()
-
-                if not availability:
-                    raise ValidationError(f'Provider is not available on {day_name}s')
-
-                if (booking_time < availability.start_time or 
-                    booking_time > availability.end_time):
-                    raise ValidationError('Selected time is outside provider\'s working hours')
+            booking_time = cleaned_data.get('booking_time')
+            if (booking_time < availability.start_time or 
+                booking_time > availability.end_time):
+                raise forms.ValidationError('Selected time is outside provider availability.')
 
         return cleaned_data
 

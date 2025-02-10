@@ -63,6 +63,8 @@ class ServiceProvider(models.Model):
     def __str__(self):
         return self.business_name
 
+
+
 class ServiceArea(models.Model):
     provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, related_name='service_areas')
     city = models.CharField(max_length=100)

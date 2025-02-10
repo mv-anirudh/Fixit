@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixItNow - Book Service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        {% block content %}
+        <!-- Create Booking Template -->
+        {% if request.resolver_match.url_name == 'create_booking' %}
+        <div class="max-w-md mx-auto bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-6">Book Service</h2>
+                
+                <!-- Service Information -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-2">Service Information</h3>
+                    <div class="space-y-2">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Service:</span>
+                            <span class="font-medium">{{ service.name }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Provider:</span>
+                            <span class="font-medium">{{ service.provider.business_name }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Price:</span>
+                            <span class="font-medium">${{ service.base_price }}</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="bg-red-50 text-red-500 p-3 rounded-lg">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="{% if message.tags == 'error' %}bg-red-50 text-red-500{% else %}bg-green-50 text-green-500{% endif %} p-3 rounded-lg">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Time Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Select Time
+                        </label>
+                        {{ form.booking_time }}
+                        {% if form.booking_time.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.booking_time.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Service Location
+                        </label>
+                        {{ form.service_location }}
+                        {% if form.service_location.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.service_location.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Special Instructions -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Special Instructions (Optional)
+                        </label>
+                        {{ form.special_instructions }}
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Confirm Booking
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Booking Confirmation Template -->
+        <div class="max-w-md mx-auto bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6 text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="bg-green-500 text-white rounded-full p-2 inline-block">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-bold mb-4">Booking Confirmed!</h2>
+                
+                <div class="text-left mb-4">
+                    <h3 class="font-semibold text-lg mb-2">Service Details</h3>
+                    <div class="space-y-2">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Service:</span>
+                            <span class="font-medium">{{ booking.service.name }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Provider:</span>
+                            <span class="font-medium">{{ booking.provider.business_name }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Price:</span>
+                            <span class="font-medium">${{ booking.total_amount }}</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="text-left mb-4">
+                    <h3 class="font-semibold text-lg mb-2">Appointment Details</h3>
+                    <div class="space-y-2">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Date:</span>
+                            <span class="font-medium">{{ booking.booking_date|date:"Y-m-d" }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Time:</span>
+                            <span class="font-medium">{{ booking.booking_time|time:"H:i" }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Location:</span>
+                            <span class="font-medium">{{ booking.service_location }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="font-medium">{{ booking.get_status_display }}</span>
+                        </p>
+                    </div>
+                </div>
+                
+                {% if booking.special_instructions %}
+                <div class="text-left mb-4">
+                    <h3 class="font-semibold text-lg mb-2">Special Instructions</h3>
+                    <p class="text-gray-600">{{ booking.special_instructions }}</p>
+                </div>
+                {% endif %}
+                
+                <p class="text-sm text-gray-500 mb-4">A confirmation email has been sent with your booking details.</p>
+                
+                <div class="flex space-x-4 justify-center">
+                    <a href="" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Return to Home
+                    </a>
+                    <a href="" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                        View All Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endblock %}
+    </div>
+
+    <!-- Add form styling -->
+    <style type="text/tailwindcss">
+        @layer components {
+            input[type="time"],
+            input[type="text"],
+            textarea {
+                @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -11,9 +11,12 @@ from django.contrib import messages
 from django.db.models import Q, Avg
 
 from accounts.models import Certification,ServiceArea
-from .models import Service, ServiceCategory, Booking,AvailabilitySchedule
+from .models import Review, Service, ServiceCategory, Booking,AvailabilitySchedule
 from .forms import BookingForm, ServiceSearchForm
-from datetime import datetime
+
+
+from datetime import *
+from django.utils import timezone
 
 class ServiceListView(ListView):
     model = Service
@@ -89,6 +92,7 @@ class ServiceDetailView(DetailView):
         context['certifications'] = Certification.objects.filter(provider=self.object.provider)
         context['service_area'] = ServiceArea.objects.filter(provider=self.object.provider)
         context['availabilty_schedule'] = AvailabilitySchedule.objects.filter(provider=self.object.provider)
+    
         
         
         
@@ -97,28 +101,49 @@ class ServiceDetailView(DetailView):
 class CreateBookingView(LoginRequiredMixin, CreateView):
     model = Booking
     form_class = BookingForm
-    template_name = 'services/create_booking.html'
+    template_name = 'create_booking.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        self.service = get_object_or_404(Service, pk=self.kwargs['service_id'])
+        return super().dispatch(request, *args, **kwargs)
     
     def get_success_url(self):
         return reverse_lazy('services:booking_detail', kwargs={'pk': self.object.pk})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        self.service = get_object_or_404(Service, pk=self.kwargs['service_id'])
         kwargs['provider'] = self.service.provider
         return kwargs
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['service'] = self.service
+        context['provider'] = self.service.provider
+        return context
 
     def form_valid(self, form):
-        form.instance.service = self.service
-        form.instance.provider = self.service.provider
-        form.instance.customer = self.request.user
-        form.instance.total_amount = self.service.base_price
-        messages.success(self.request, 'Booking created successfully!')
-        return super().form_valid(form)
+        try:
+            form.instance.service = self.service
+            form.instance.provider = self.service.provider
+            form.instance.customer = self.request.user
+            form.instance.total_amount = self.service.base_price
+            form.instance.booking_date = timezone.now().date()
+            form.instance.status = 'confirmed'
+            response = super().form_valid(form)
+            messages.success(self.request, 'Service booked successfully!')
+            return response
+        except Exception as e:
+            messages.error(self.request, f'Booking failed: {str(e)}')
+            return super().form_invalid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Please correct the errors below.')
+        return super().form_invalid(form)
+       
 
 class BookingDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Booking
-    template_name = 'services/booking_detail.html'
+    template_name = 'booking_detail.html'
     context_object_name = 'booking'
 
     def test_func(self):
@@ -128,7 +153,7 @@ class BookingDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 class BookingListView(LoginRequiredMixin, ListView):
     model = Booking
-    template_name = 'services/booking_list.html'
+    template_name = 'booking_list.html'
     context_object_name = 'bookings'
     paginate_by = 10
 
@@ -137,25 +162,9 @@ class BookingListView(LoginRequiredMixin, ListView):
             return Booking.objects.filter(customer=self.request.user)
         return Booking.objects.filter(provider__user=self.request.user)
 
-class UpdateBookingStatusView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Booking
-    fields = ['status']
-    template_name = 'services/update_booking_status.html'
-
-    def test_func(self):
-        booking = self.get_object()
-        return self.request.user == booking.provider.user
-
-    def get_success_url(self):
-        return reverse_lazy('services:booking_detail', kwargs={'pk': self.object.pk})
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Booking status updated successfully!')
-        return super().form_valid(form)
-
 class ProviderDashboardView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Booking
-    template_name = 'services/provider_dashboard.html'
+    template_name = 'provider_dashboard.html'
     context_object_name = 'recent_bookings'
 
     def test_func(self):
