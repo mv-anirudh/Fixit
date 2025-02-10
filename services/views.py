@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
+from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.views.generic.edit import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -8,8 +9,10 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.db.models import Q, Avg
-from .models import Service, ServiceCategory, Booking
-from .forms import ServiceForm, BookingForm, ServiceSearchForm
+
+from accounts.models import Certification,ServiceArea
+from .models import Service, ServiceCategory, Booking,AvailabilitySchedule
+from .forms import BookingForm, ServiceSearchForm
 from datetime import datetime
 
 class ServiceListView(ListView):
@@ -83,6 +86,12 @@ class ServiceDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['booking_form'] = BookingForm(provider=self.object.provider)
+        context['certifications'] = Certification.objects.filter(provider=self.object.provider)
+        context['service_area'] = ServiceArea.objects.filter(provider=self.object.provider)
+        context['availabilty_schedule'] = AvailabilitySchedule.objects.filter(provider=self.object.provider)
+        
+        
+        
         return context
 
 class CreateBookingView(LoginRequiredMixin, CreateView):
@@ -174,3 +183,5 @@ class ProviderDashboardView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             'services': Service.objects.filter(provider=provider),
         })
         return context
+    
+    
