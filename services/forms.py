@@ -1,5 +1,5 @@
 from django import forms
-from .models import AvailabilitySchedule, Service, Booking, ServiceCategory
+from .models import AvailabilitySchedule, Review, Service, Booking, ServiceCategory
 from django.core.exceptions import ValidationError
 from datetime import *
 from django.utils import timezone
@@ -86,3 +86,22 @@ class ServiceSearchForm(forms.Form):
         required=False,
         widget=forms.Select(attrs={'class': 'px-4 py-2 rounded-lg border border-gray-300'})
     )
+    
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.NumberInput(attrs={'min': '0', 'max': '5', 'step': '0.1'}),
+            'comment': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Write your review...'}),
+        }
+        
+class AvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = AvailabilitySchedule
+        # Exclude provider field to prevent providers from seeing/selecting other providers
+        exclude = ['provider']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        

@@ -2,9 +2,12 @@ from django.db import models
 
 # Create your models here.
 from django.db import models
+from django.dispatch import receiver
 from django.forms import ValidationError
+from Fixit import settings
 from accounts.models import User, ServiceProvider
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save
 
 class ServiceCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -106,9 +109,10 @@ class ServiceImage(models.Model):
         super().save(*args, **kwargs)
         
         
+        
 class Review(models.Model):
-    service_provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    service = models.ForeignKey('Service', on_delete=models.CASCADE, related_name='reviews', default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Renamed from 'customer' to 'user'
     rating = models.DecimalField(
         max_digits=3, 
         decimal_places=2,
@@ -117,5 +121,8 @@ class Review(models.Model):
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'service')  # Ensuring uniqueness for user-service pair
+
     def __str__(self):
-        return f"Review by {self.user.username} for {self.service_provider.business_name}"
+        return f"Review by {self.user.username} for {self.service}"

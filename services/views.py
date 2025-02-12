@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 # Create your views here.
 from django.views import View
@@ -9,14 +9,26 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.db.models import Q, Avg
+from django.core.exceptions import PermissionDenied
 
 from accounts.models import Certification,ServiceArea
 from .models import Review, Service, ServiceCategory, Booking,AvailabilitySchedule
-from .forms import BookingForm, ServiceSearchForm
+from .forms import BookingForm, ReviewForm, ServiceForm, ServiceSearchForm,AvailabilityForm
 
 
 from datetime import *
 from django.utils import timezone
+
+class ServiceCreateView(CreateView):
+    model = Service
+    form_class = ServiceForm
+    template_name = 'add_service.html'  
+    success_url = reverse_lazy('service_list')  
+    
+    def form_valid(self, form):
+    
+        return super().form_valid(form)
+
 
 class ServiceListView(ListView):
     model = Service
@@ -91,12 +103,40 @@ class ServiceDetailView(DetailView):
         context['booking_form'] = BookingForm(provider=self.object.provider)
         context['certifications'] = Certification.objects.filter(provider=self.object.provider)
         context['service_area'] = ServiceArea.objects.filter(provider=self.object.provider)
-        context['availabilty_schedule'] = AvailabilitySchedule.objects.filter(provider=self.object.provider)
-    
-        
-        
-        
+        context['availability_schedule'] = AvailabilitySchedule.objects.filter(provider=self.object.provider)
+        context["review_form"] = ReviewForm()
+        context["reviews"] = self.object.reviews.all().order_by('-created_at')
         return context
+
+    def post(self, request, *args, **kwargs):
+        service = self.get_object()
+        return self.handle_review(request, service)
+
+    def handle_review(self, request, service):
+        form = ReviewForm(request.POST)
+        if form.is_valid() and request.user.is_authenticated:
+            # Check if the user has already reviewed this service
+            existing_review = Review.objects.filter(service=service, user=request.user).first()
+            
+            if existing_review:
+                # Update the existing review with new data
+                existing_review.rating = form.cleaned_data['rating']
+                existing_review.comment = form.cleaned_data['comment']
+                existing_review.save()
+                messages.success(request, "Your review has been updated!")
+            else:
+                review = form.save(commit=False)
+                review.service = service
+                review.user = request.user
+                review.save()
+                messages.success(request, "Thank you for your review!")
+            
+            return redirect('services:service_detail', pk=service.pk)
+        
+        messages.error(request, "Please correct the errors below.")
+        return self.get(request)
+
+
 
 class CreateBookingView(LoginRequiredMixin, CreateView):
     model = Booking
@@ -162,35 +202,40 @@ class BookingListView(LoginRequiredMixin, ListView):
             return Booking.objects.filter(customer=self.request.user)
         return Booking.objects.filter(provider__user=self.request.user)
 
-class ProviderDashboardView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    model = Booking
-    template_name = 'provider_dashboard.html'
-    context_object_name = 'recent_bookings'
 
-    def test_func(self):
-        return self.request.user.user_type == 'service_provider'
-
+class AvailabilityView(LoginRequiredMixin, CreateView):
+    model = AvailabilitySchedule
+    form_class = AvailabilityForm
+    template_name = "add_schedule.html"
+    success_url = reverse_lazy('provider_dashboard')
+    
     def get_queryset(self):
-        return Booking.objects.filter(
-            provider__user=self.request.user
-        ).order_by('-created_at')[:5]
+        # Restrict queryset to only show current provider's schedules
+        return AvailabilitySchedule.objects.filter(provider=self.request.user.serviceprovider)
+    
+    def form_valid(self, form):
+        # Set the provider to the current user's ServiceProvider instance
+        form.instance.provider = self.request.user.serviceprovider
+        try:
+            return super().form_valid(form)
+        except Exception as e:
+            messages.error(self.request, str(e))
+            return super().form_invalid(form)
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user is a service provider
+        if not hasattr(request.user, 'serviceprovider'):
+            messages.error(request, "Only service providers can manage schedules")
+            return redirect('home')
+            
+        # Ensure providers can only access their own schedules
+        if 'pk' in kwargs:
+            schedule = self.get_queryset().filter(pk=kwargs['pk']).first()
+            if schedule and schedule.provider != request.user.serviceprovider:
+                raise PermissionDenied("You can only manage your own schedules")
+                
+        return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        provider = self.request.user.serviceprovider
-        today = datetime.now().date()
-        
-        context.update({
-            'pending_bookings': Booking.objects.filter(
-                provider=provider,
-                status='pending'
-            ).count(),
-            'today_bookings': Booking.objects.filter(
-                provider=provider,
-                booking_date=today
-            ),
-            'services': Service.objects.filter(provider=provider),
-        })
-        return context
+
     
     
