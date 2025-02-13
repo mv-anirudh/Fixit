@@ -65,7 +65,7 @@ class SigninView(View):
                 login(request,user_obj)
                 # Redirect to different pages based on user type
                 if user_obj.user_type == 'service_provider':
-                    return redirect("accounts:provider_dashboard")
+                    return redirect("accounts:service_registration")
                 return redirect("index")
         return render(request,self.template_name,{"form":form_instance})
 
@@ -80,7 +80,7 @@ class ServiceProviderRegistrationView(LoginRequiredMixin, CreateView):
     model = ServiceProvider
     form_class = ServiceProviderForm
     template_name = 'service_provider_registration.html'
-    success_url = reverse_lazy('index')
+    success_url = reverse_lazy('accounts:provider_dashboard')
 
     # Check if user can access this view
     def dispatch(self, request, *args, **kwargs):

@@ -1,21 +1,15 @@
 from django.shortcuts import redirect, render
-
-# Create your views here.
-from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.views.generic.edit import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
-from django.db.models import Q, Avg
+from django.db.models import Q
 from django.core.exceptions import PermissionDenied
-
 from accounts.models import Certification,ServiceArea
 from .models import Review, Service, ServiceCategory, Booking,AvailabilitySchedule
 from .forms import BookingForm, ReviewForm, ServiceForm, ServiceSearchForm,AvailabilityForm
-
-
 from datetime import *
 from django.utils import timezone
 
@@ -26,8 +20,21 @@ class ServiceCreateView(CreateView):
     success_url = reverse_lazy('service_list')  
     
     def form_valid(self, form):
+        # Set the provider to the current user's ServiceProvider instance
+        form.instance.provider = self.request.user.serviceprovider
+        try:
+            messages.success(self.request, "Service created successfully!")
+            return super().form_valid(form)
+        except Exception as e:
+            messages.error(self.request, f"Error creating service: {str(e)}")
+            return super().form_invalid(form)
     
-        return super().form_valid(form)
+    def dispatch(self, request, *args, **kwargs):
+        # Check if user is a service provider
+        if not hasattr(request.user, 'serviceprovider'):
+            messages.error(request, "Only service providers can create services")
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
 
 
 class ServiceListView(ListView):

@@ -3,95 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FixItNow - Your trusted platform for home services and maintenance solutions">
     <title>{% block title %}FixItNow{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Add Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50">
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-blue-600 focus:text-white">
+        Skip to main content
+    </a>
+
     <!-- Navbar -->
-    <nav class="bg-white shadow-md fixed w-full top-0 z-50">
+    <nav class="bg-white shadow-md fixed w-full top-0 z-50" aria-label="Main navigation">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex flex-col md:flex-row md:justify-between md:h-16">
                 <div class="flex justify-between items-center h-16 md:h-auto">
-                    <a href="/" class="text-blue-600 font-bold text-xl md:text-2xl hover:text-blue-700">
-                        <i class="fas fa-tools mr-2"></i>FixItNow
+                    <a href="/" class="text-blue-600 font-bold text-xl md:text-2xl hover:text-blue-700" aria-label="FixItNow Home">
+                        <i class="fas fa-tools mr-2" aria-hidden="true"></i>FixItNow
                     </a>
-                    <!-- Mobile menu button -->
-                    <button class="md:hidden text-gray-600 hover:text-blue-600 focus:outline-none" id="mobile-menu-button">
-                        <i class="fas fa-bars text-xl"></i>
+                    <button 
+                        class="md:hidden text-gray-600 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg p-2" 
+                        id="mobile-menu-button"
+                        aria-expanded="false"
+                        aria-controls="mobile-menu"
+                        aria-label="Toggle navigation menu">
+                        <i class="fas fa-bars text-xl" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="hidden md:flex md:items-center md:space-x-6 py-4 md:py-0" id="mobile-menu">
-                    <a href="{% url 'services:service_list' %}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0">
-                        <i class="fas fa-search mr-1"></i>Find Services
+                <div 
+                    class="hidden md:flex md:items-center md:space-x-6 py-4 md:py-0" 
+                    id="mobile-menu"
+                    role="navigation"
+                    aria-label="Site navigation">
+                    <a href="{% url 'services:service_list' %}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                        <i class="fas fa-search mr-1" aria-hidden="true"></i>Find Services
                     </a>
                     
-                    <a href="{% url 'accounts:service_registration' %}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0">
-                        <i class="fas fa-user-tie mr-1"></i>Become a Provider
-                    </a>
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'accounts:signout' %}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0">
-                            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                    {% if user.user_type == 'service_provider' %}
+                        <a href="{% url 'accounts:provider_dashboard' %}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                            <i class="fas fa-chart-line mr-1" aria-hidden="true"></i>View Dashboard
                         </a>
-                        <span class="block md:inline-block text-gray-600 py-2 md:py-0">
-                            <i class="fas fa-user mr-1"></i>{{ user.username }}
-                        </span>
                     {% else %}
-                    <a href="{% url 'accounts:signin'%}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0">
-                        <i class="fas fa-sign-in-alt mr-1"></i>Login
-                    </a>
-                    <a href="{% url 'accounts:signup'%}" class="block md:inline-block bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto text-center">
-                        <i class="fas fa-user-plus mr-1"></i>Register
-                    </a>
+                        <a href="{% url 'accounts:service_registration' %}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                            <i class="fas fa-user-tie mr-1" aria-hidden="true"></i>Become a Provider
+                        </a>
                     {% endif %}
 
-
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:signout' %}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                            <i class="fas fa-sign-out-alt mr-1" aria-hidden="true"></i>Logout
+                        </a>
+                        <span class="block md:inline-block text-gray-600 py-2 md:py-0">
+                            <i class="fas fa-user mr-1" aria-hidden="true"></i>{{ user.username }}
+                        </span>
+                    {% else %}
+                        <a href="{% url 'accounts:signin'%}" class="block md:inline-block text-gray-600 hover:text-blue-600 transition-colors py-2 md:py-0 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                            <i class="fas fa-sign-in-alt mr-1" aria-hidden="true"></i>Login
+                        </a>
+                        <a href="{% url 'accounts:signup'%}" class="block md:inline-block bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto text-center focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">
+                            <i class="fas fa-user-plus mr-1" aria-hidden="true"></i>Register
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 pt-32 md:pt-20 pb-12">
+    <main id="main-content" class="flex-grow container mx-auto px-4 pt-32 md:pt-20 pb-12">
         {% block content %}
         {% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white shadow-inner">
+    <footer class="bg-white shadow-inner" role="contentinfo">
         <div class="max-w-6xl mx-auto px-4 py-8 md:py-10">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
                 <div>
                     <h3 class="text-lg font-semibold mb-4 text-gray-800">
-                        <i class="fas fa-info-circle mr-2"></i>About Us
+                        <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>About Us
                     </h3>
                     <p class="text-gray-600 leading-relaxed">Your trusted platform for home services and maintenance solutions.</p>
                 </div>
-                <div>
+                <nav aria-label="Footer quick links">
                     <h3 class="text-lg font-semibold mb-4 text-gray-800">
-                        <i class="fas fa-link mr-2"></i>Quick Links
+                        <i class="fas fa-link mr-2" aria-hidden="true"></i>Quick Links
                     </h3>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">
-                            <i class="fas fa-search mr-1"></i>Find Services
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                            <i class="fas fa-search mr-1" aria-hidden="true"></i>Find Services
                         </a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">
-                            <i class="fas fa-user-tie mr-1"></i>Become a Provider
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                            <i class="fas fa-user-tie mr-1" aria-hidden="true"></i>Become a Provider
                         </a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">
-                            <i class="fas fa-envelope mr-1"></i>Contact Us
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+                            <i class="fas fa-envelope mr-1" aria-hidden="true"></i>Contact Us
                         </a></li>
                     </ul>
-                </div>
+                </nav>
                 <div>
                     <h3 class="text-lg font-semibold mb-4 text-gray-800">
-                        <i class="fas fa-address-card mr-2"></i>Contact
+                        <i class="fas fa-address-card mr-2" aria-hidden="true"></i>Contact
                     </h3>
-                    <div class="space-y-3 text-gray-600">
-                        <p><i class="fas fa-envelope mr-2"></i>Email: support@fixitnow.com</p>
-                        <p><i class="fas fa-phone mr-2"></i>Phone: (555) 123-4567</p>
-                    </div>
+                    <address class="space-y-3 text-gray-600 not-italic">
+                        <p><i class="fas fa-envelope mr-2" aria-hidden="true"></i>Email: <a href="mailto:support@fixitnow.com" class="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">support@fixitnow.com</a></p>
+                        <p><i class="fas fa-phone mr-2" aria-hidden="true"></i>Phone: <a href="tel:+15551234567" class="hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">(555) 123-4567</a></p>
+                    </address>
                 </div>
             </div>
         </div>
@@ -103,7 +121,8 @@
         const mobileMenu = document.getElementById('mobile-menu');
         
         mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+            const isExpanded = mobileMenu.classList.toggle('hidden');
+            mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
         });
     </script>
 </body>
