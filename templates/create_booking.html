@@ -10,12 +10,13 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         {% block content %}
-        <!-- Create Booking Template -->
+
         {% if request.resolver_match.url_name == 'create_booking' %}
+        <!-- Booking Form -->
         <div class="max-w-md mx-auto bg-white shadow-md rounded-lg overflow-hidden">
             <div class="p-6">
                 <h2 class="text-2xl font-bold mb-6">Book Service</h2>
-                
+
                 <!-- Service Information -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h3 class="font-semibold text-lg mb-2">Service Information</h3>
@@ -35,46 +36,18 @@
                     </div>
                 </div>
 
-                <!-- Booking Form -->
+                <!-- Display Error Messages -->
+                {% if form.errors %}
+                <div class="bg-red-50 text-red-500 p-3 rounded-lg mb-4">
+                    <strong>Please correct the errors below:</strong>
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
                 <form method="post" class="space-y-4">
                     {% csrf_token %}
+                    {{ form.as_p }}
                     
-                    {% if form.non_field_errors %}
-                    <div class="bg-red-50 text-red-500 p-3 rounded-lg">
-                        {{ form.non_field_errors }}
-                    </div>
-                    {% endif %}
-
-                    <!-- Time Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Select Time
-                        </label>
-                        {{ form.booking_time }}
-                        {% if form.booking_time.errors %}
-                        <p class="text-red-500 text-sm mt-1">{{ form.booking_time.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Location -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Service Location
-                        </label>
-                        {{ form.service_location }}
-                        {% if form.service_location.errors %}
-                        <p class="text-red-500 text-sm mt-1">{{ form.service_location.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Special Instructions -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Special Instructions (Optional)
-                        </label>
-                        {{ form.special_instructions }}
-                    </div>
-
                     <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                         Confirm Booking
                     </button>
@@ -83,7 +56,7 @@
         </div>
 
         {% else %}
-        <!-- Booking Confirmation Template -->
+        <!-- Booking Confirmation -->
         <div class="max-w-md mx-auto bg-white shadow-md rounded-lg overflow-hidden">
             <div class="p-6 text-center">
                 <div class="flex justify-center mb-4">
@@ -94,7 +67,8 @@
                     </div>
                 </div>
                 <h2 class="text-2xl font-bold mb-4">Booking Confirmed!</h2>
-                
+
+                <!-- Service Details -->
                 <div class="text-left mb-4">
                     <h3 class="font-semibold text-lg mb-2">Service Details</h3>
                     <div class="space-y-2">
@@ -112,7 +86,8 @@
                         </p>
                     </div>
                 </div>
-                
+
+                <!-- Appointment Details -->
                 <div class="text-left mb-4">
                     <h3 class="font-semibold text-lg mb-2">Appointment Details</h3>
                     <div class="space-y-2">
@@ -134,34 +109,36 @@
                         </p>
                     </div>
                 </div>
-                
+
+                <!-- Special Instructions -->
                 {% if booking.special_instructions %}
                 <div class="text-left mb-4">
                     <h3 class="font-semibold text-lg mb-2">Special Instructions</h3>
                     <p class="text-gray-600">{{ booking.special_instructions }}</p>
                 </div>
                 {% endif %}
-                
+
                 <p class="text-sm text-gray-500 mb-4">A confirmation email has been sent with your booking details.</p>
-                
+
+                <!-- Navigation Buttons -->
                 <div class="flex space-x-4 justify-center">
-                    <a href="" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <a href="{% url 'services:home' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                         Return to Home
                     </a>
-                    <a href="" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                    <a href="{% url 'services:my_bookings' %}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
                         View All Bookings
                     </a>
                 </div>
-                
-                <!-- Display messages only after booking confirmation -->
+
+                <!-- Display Messages -->
                 {% if messages %}
-                    <div class="messages mb-4">
-                        {% for message in messages %}
-                            <div class="{% if message.tags == 'error' %}bg-red-50 text-red-500{% else %}bg-green-50 text-green-500{% endif %} p-3 rounded-lg">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    </div>
+                <div class="messages mb-4">
+                    {% for message in messages %}
+                        <div class="{% if message.tags == 'error' %}bg-red-50 text-red-500{% else %}bg-green-50 text-green-500{% endif %} p-3 rounded-lg">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -169,7 +146,7 @@
         {% endblock %}
     </div>
 
-    <!-- Add form styling -->
+    <!-- Input Styling -->
     <style>
         input[type="time"],
         input[type="text"],
@@ -180,14 +157,10 @@
             border-radius: 0.5rem;
             outline: none;
         }
-        input[type="time"]:focus,
-        input[type="text"]:focus,
+        input:focus,
         textarea:focus {
-            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-            --tw-ring-color: rgb(59 130 246 / 0.5);
             border-color: #3b82f6;
+            box-shadow: 0 0 4px rgba(59, 130, 246, 0.5);
         }
     </style>
 </body>

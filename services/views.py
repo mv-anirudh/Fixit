@@ -1,8 +1,10 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.views.generic.edit import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
@@ -143,8 +145,6 @@ class ServiceDetailView(DetailView):
         messages.error(request, "Please correct the errors below.")
         return self.get(request)
 
-
-
 class CreateBookingView(LoginRequiredMixin, CreateView):
     model = Booking
     form_class = BookingForm
@@ -153,7 +153,7 @@ class CreateBookingView(LoginRequiredMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         self.service = get_object_or_404(Service, pk=self.kwargs['service_id'])
         return super().dispatch(request, *args, **kwargs)
-    
+
     def get_success_url(self):
         return reverse_lazy('services:booking_detail', kwargs={'pk': self.object.pk})
 
@@ -166,6 +166,21 @@ class CreateBookingView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context['service'] = self.service
         context['provider'] = self.service.provider
+
+        # Get available dates based on provider's schedule
+        today = timezone.now().date()
+        available_days = AvailabilitySchedule.objects.filter(
+            provider=self.service.provider,
+            is_available=True
+        ).values_list('day_of_week', flat=True)
+
+        valid_dates = [
+            (today + timezone.timedelta(days=i)).strftime('%Y-%m-%d')
+            for i in range(30)  # Allow booking up to 30 days in advance
+            if (today + timezone.timedelta(days=i)).strftime('%A') in available_days
+        ]
+
+        context['available_dates'] = valid_dates
         return context
 
     def form_valid(self, form):
@@ -174,7 +189,6 @@ class CreateBookingView(LoginRequiredMixin, CreateView):
             form.instance.provider = self.service.provider
             form.instance.customer = self.request.user
             form.instance.total_amount = self.service.base_price
-            form.instance.booking_date = timezone.now().date()
             form.instance.status = 'confirmed'
             response = super().form_valid(form)
             messages.success(self.request, 'Service booked successfully!')
@@ -186,7 +200,6 @@ class CreateBookingView(LoginRequiredMixin, CreateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Please correct the errors below.')
         return super().form_invalid(form)
-       
 
 class BookingDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Booking
@@ -244,5 +257,3 @@ class AvailabilityView(LoginRequiredMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
 
-    
-    

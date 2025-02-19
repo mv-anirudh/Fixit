@@ -8,5 +8,6 @@ urlpatterns = [
     path("signout/",views.SiginOut.as_view(),name="signout"),
     path("service/registration/",views.ServiceProviderRegistrationView.as_view(),name="service_registration"),
     path('dashboard/', views.ProviderDashboardView.as_view(), name='provider_dashboard'),
+    path('customer/dashboard/',views.CustomerDashboardView.as_view(), name='customer_dashboard'),
    
 ]

@@ -65,7 +65,7 @@ class SigninView(View):
                 login(request,user_obj)
                 # Redirect to different pages based on user type
                 if user_obj.user_type == 'service_provider':
-                    return redirect("accounts:service_registration")
+                    return redirect("accounts:provider_dashboard")
                 return redirect("index")
         return render(request,self.template_name,{"form":form_instance})
 
@@ -170,4 +170,50 @@ class ProviderDashboardView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             ),
             'services': Service.objects.filter(provider=provider),
         })
+        return context
+    
+
+class CustomerDashboardView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Booking
+    template_name = 'customer_dashboard.html'
+    context_object_name = 'customer_bookings'
+    
+    # Ensure only customers can access this view
+    def test_func(self):
+        return self.request.user.user_type == 'customer'
+    
+    # Get bookings for the customer
+    def get_queryset(self):
+        return Booking.objects.filter(
+            customer=self.request.user
+        ).order_by('-booking_date', '-booking_time')
+    
+    # Add additional context data for the dashboard
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        today = datetime.now().date()
+        
+        # Add relevant customer information
+        context.update({
+            'upcoming_bookings': Booking.objects.filter(
+                customer=self.request.user,
+                booking_date__gte=today,
+                status='confirmed'
+            ).order_by('booking_date', 'booking_time'),
+            
+            'pending_bookings': Booking.objects.filter(
+                customer=self.request.user,
+                status='pending'
+            ).count(),
+            
+            'completed_bookings': Booking.objects.filter(
+                customer=self.request.user,
+                status='completed'
+            ).count(),
+            
+        
+            
+            'favorite_providers': self.request.user.favorite_providers.all()[:3] if hasattr(self.request.user, 'favorite_providers') else [],
+        })
+        
         return context
